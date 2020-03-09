@@ -4,7 +4,7 @@
 #include<stdarg.h>
 #include<stdio.h>
 // basic operations on strings and files
-char* susbtr(char* string, int start, int length){ // działa
+char* susbtr(char* string, int start, int length){ 
     char* result = (char*) malloc(sizeof(char)*length);
     for(int i = start, j = 0; j<length; i++, j++){
         result[j] = string[i];
@@ -12,7 +12,7 @@ char* susbtr(char* string, int start, int length){ // działa
     return result;
 }
 
-char* stringConcat(int num, ...){// działa
+char* stringConcat(int num, ...){
     va_list list;
     char** tempArrays = (char**)malloc(sizeof(char*)*num);
     int* sizes = (int*) malloc(sizeof(int)*num);
@@ -38,7 +38,7 @@ char* stringConcat(int num, ...){// działa
     return result;
 }
 
-char* readTextFileToString(char* fileName){// działa
+char* readTextFileToString(char* fileName){
     FILE* file = fopen(fileName, "r");
     int count = 0;
     for(char curr = fgetc(file); curr!=EOF; curr = fgetc(file)){
@@ -56,7 +56,7 @@ char* readTextFileToString(char* fileName){// działa
     return result;
 }
 
-char* makeSysCall(char* name1, char* name2, char* outputFile){// działa
+char* makeSysCall(char* name1, char* name2, char* outputFile){
     char* call = stringConcat(6, "diff ", name1, " ", name2, " > ", outputFile);
     return call;
 }
@@ -76,9 +76,6 @@ filesPair* makeFilesPair(char* n1, char* n2){
 }
 
 void deletePair(filesPair* pair){
-    if(pair == NULL){
-        return;
-    }
     free(pair->name1);
     free(pair->name2);
     free(pair);
@@ -132,18 +129,18 @@ typedef struct{
 
 
 // operations on "diff" output
-bool isDigit(char c){// działa
+bool isDigit(char c){
     return (c-'0' >= 0 && '9' - c >=0);
 }
 
-bool isThisBeginingOfOperations(char* string, int index){// działa
+bool isThisBeginingOfOperations(char* string, int index){
     if(index == 0){
         return true;
     }
     return isDigit(string[index]) && (string[index-1] == '\n');
 }
 
-operationsBlock* parseOperationsStream(char* stream){// działa
+operationsBlock* parseOperationsStream(char* stream){
     int len = strlen(stream);
     int numOfOperations = 0;
     char** operations;
@@ -169,7 +166,7 @@ operationsBlock* parseOperationsStream(char* stream){// działa
     return makeBlock(operations, numOfOperations);
 }
 
-operationsBlock* diffPair(filesPair* pair){// działa 
+operationsBlock* diffPair(filesPair* pair){
     char tempFile[] = "temp.txt";
     char* call = makeSysCall(pair->name1, pair->name2, tempFile);
     system(call);
@@ -200,6 +197,12 @@ blockArray* makeBlockArrayFromScratch(int number, ...){
     return result;
 }
 
+void printArray(blockArray* block){
+    for(int i = 0; i<block->head; i++){
+        printBlock(block->arr[i]);
+    }
+}
+
 void deleteBlockArray(blockArray* arr){
     for(int i = 0; i<arr->rawSize; i++){
         deletePair(arr->sequence[i]);
@@ -222,7 +225,7 @@ void deleteOneBlockFromArray(blockArray* arr, int index){
         arr->arr[arr->head] = NULL;
     }
     if(arr->head <= arr->rawSize/4){
-        operationsBlock** temp = (operationsBlock**) malloc(sizeof(operationsBlock*) * (arr->rawSize/2));
+        operationsBlock** temp = (operationsBlock**) malloc(sizeof(operationsBlock*) * arr->rawSize/2);
         for(int i = 0; i<arr->head; i++){
             temp[i] = arr->arr[i];
             arr->arr[i] = NULL;
@@ -277,5 +280,3 @@ void addOneBlock(blockArray* bl, char* fileName1, char* fileName2){
     bl->head++;
     deletePair(tempPair);
 }
-
-
