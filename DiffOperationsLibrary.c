@@ -259,4 +259,23 @@ void deleteSingleOperation(operationsBlock* block, int index){
     }
 }
 
+void addOneBlock(blockArray* bl, char* fileName1, char* fileName2){
+    filesPair* tempPair = makeFilesPair(fileName1, fileName2);
+    operationsBlock* block = diffPair(tempPair);
+    if(bl->head == bl->rawSize){
+        operationsBlock** temp = (operationsBlock**) malloc(sizeof(operationsBlock*)*bl->rawSize*2);
+        for(int i = 0; i<bl->head; i++){
+            temp[i] = bl->arr[i];
+            bl->arr[i] = NULL;
+        }
+        operationsBlock** temp2 = bl->arr;
+        bl->arr = temp;
+        bl->rawSize*=2;
+        free(temp2);
+    }
+    bl->arr[bl->head] = block;
+    bl->head++;
+    deletePair(tempPair);
+}
+
 
