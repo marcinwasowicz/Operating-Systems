@@ -121,8 +121,14 @@ void deleteBlock(operationsBlock* block){
 }
 
 typedef struct{
+    filesPair** arr;
+    int size;
+    int rawSize;
+}filesSequence;
+
+typedef struct{
     operationsBlock** arr;
-    filesPair** sequence;
+    filesSequence* sequence;
     int rawSize;
     int head;
 }blockArray;
@@ -179,19 +185,22 @@ operationsBlock* diffPair(filesPair* pair){
 
 blockArray* makeBlockArrayFromScratch(int number, ...){
     operationsBlock** arr = (operationsBlock**) malloc(sizeof(operationsBlock*)*(number/2));
-    filesPair** sequence = (filesPair**) malloc(sizeof(filesPair*)*(number/2));
+    filesPair** pairSequence = (filesPair**) malloc(sizeof(filesPair*)*(number/2));
     va_list list;
     va_start(list, number);
     for(int i = 0; i<number/2; i++){
         char* file1 = va_arg(list, char*);
         char* file2 = va_arg(list, char*);
-        sequence[i] = makeFilesPair(file1, file2);
-        arr[i] = diffPair(sequence[i]);
+        pairSequence[i] = makeFilesPair(file1, file2);
+        arr[i] = diffPair(pairSequence[i]);
     }
     va_end(list);
     blockArray* result = (blockArray*) malloc(sizeof(blockArray));
+    result->sequence = (filesSequence*) malloc(sizeof(filesSequence));
+    result->sequence->arr = pairSequence;
+    result->sequence->size = number/2;
+    result->sequence->rawSize = number/2;
     result->arr = arr;
-    result->sequence = sequence;
     result->head = number/2;
     result->rawSize = number/2;
     return result;
@@ -204,13 +213,50 @@ void printArray(blockArray* block){
 }
 
 void deleteBlockArray(blockArray* arr){
-    for(int i = 0; i<arr->rawSize; i++){
-        deletePair(arr->sequence[i]);
+    for(int i = 0; i<arr->head; i++){
+        deletePair(arr->sequence->arr[i]);
         deleteBlock(arr->arr[i]);
     }
+
     free(arr->arr);
+    free(arr->sequence->arr);
     free(arr->sequence);
     free(arr);
+}
+
+void updatePairSequenceAddition(blockArray* bl, char* fileName1, char* fileName2){
+    if(bl->sequence->size >= bl->sequence->rawSize){
+        filesPair** temp = (filesPair**) malloc(sizeof(filesPair*)*bl->sequence->rawSize*2);
+        for(int i = 0; i<bl->sequence->size; i++){
+            temp[i] = bl->sequence->arr[i];
+            bl->sequence->arr[i] = NULL;
+        }
+        filesPair** temp2 = bl->sequence->arr;
+        bl->sequence->arr = temp;
+        bl->sequence->rawSize*=2;
+        free(temp2);
+    }
+    bl->sequence->arr[bl->sequence->size] = makeFilesPair(fileName1, fileName2);
+    bl->sequence->size++;
+}
+
+void updatePairSequenceDeletion(blockArray* bl, int index){
+    filesPair* temp = bl->sequence->arr[index];
+    bl->sequence->arr[index] = bl->sequence->arr[bl->sequence->size-1];
+    bl->sequence->arr[bl->sequence->size-1] = NULL;
+    free(temp);
+    bl->sequence->size--;
+    if(bl->sequence->size <= bl->sequence->rawSize/4){
+        filesPair** temp = (filesPair**) malloc(sizeof(filesPair*)*bl->sequence->rawSize/2);
+        for(int i = 0; i<bl->sequence->size; i++){
+            temp[i] = bl->sequence->arr[i];
+            bl->sequence->arr[i] = NULL;
+        }
+        filesPair** temp2 = bl->sequence->arr;
+        bl->sequence->arr = temp;
+        bl->sequence->rawSize*=2;
+        free(temp2);
+    }
 }
 
 void deleteOneBlockFromArray(blockArray* arr, int index){
@@ -235,6 +281,7 @@ void deleteOneBlockFromArray(blockArray* arr, int index){
         arr->arr = temp;
         free(temp2);
     }
+    updatePairSequenceDeletion(arr, index);
 }
 
 void deleteSingleOperation(operationsBlock* block, int index){
@@ -279,4 +326,5 @@ void addOneBlock(blockArray* bl, char* fileName1, char* fileName2){
     bl->arr[bl->head] = block;
     bl->head++;
     deletePair(tempPair);
+    updatePairSequenceAddition(bl, fileName1, fileName2);
 }
