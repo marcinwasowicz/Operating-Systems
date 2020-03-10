@@ -1,7 +1,6 @@
 #ifndef HEADER_FILE
 #define HEADER_FILE
 
-
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
@@ -40,8 +39,14 @@ void printBlock(operationsBlock* block);
 void deleteBlock(operationsBlock* block);
 
 typedef struct{
+    filesPair** arr;
+    int size;
+    int rawSize;
+}filesSequence;
+
+typedef struct{
     operationsBlock** arr;
-    filesPair** sequence;
+    filesSequence* sequence;
     int rawSize;
     int head;
 }blockArray;
@@ -65,5 +70,9 @@ void deleteOneBlockFromArray(blockArray* arr, int index);
 void deleteSingleOperation(operationsBlock* block, int index);
 
 void addOneBlock(blockArray* bl, char* fileName1, char* filename2);
+
+void updatePairSequenceAddition(blockArray* bl, char* fileName1, char* filename2);
+
+void updatePairSequenceDeletion(blockArray* bl, int index);
 
 #endif
