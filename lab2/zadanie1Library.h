@@ -29,9 +29,9 @@ void swapFileRecordsLibrary(char* buff1, char* buff2, int pos1, int pos2, FILE* 
 int partitionLibrary(int low, int high, char* filePath, int rlen);
 
 void QuickSortLibrary(char* filePath, int low, int high, int rlen);
-// not implemented yet
+
 void CopyWithSystem(char* fileFrom, char* fileTo, int count, int rlen);
-// not implemented yet
+
 void CopyWithLibrary(char* fileFrom, char* fileTo, int count, int rlen);
 
 #endif
