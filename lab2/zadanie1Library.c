@@ -158,4 +158,26 @@ void QuickSortLibrary(char* filePath, int low, int high, int rlen){
     }
 }
 
+void CopyWithSystem(char* fileFrom, char* fileTo, int count, int rlen){
+    int from = open(fileFrom, O_RDWR);
+    int to = open(fileTo, O_RDWR | O_CREAT, 0666);
+    char* buff = (char*)malloc(sizeof(char)*rlen);
+    for(int i = 0; i<count; i++){
+        read(from, buff, rlen);
+        write(to, buff, rlen);
+    }
+    close(from);
+    close(to);
+}
 
+void CopyWithLibrary(char* fileFrom, char* fileTo, int count, int rlen){
+    FILE* from = fopen(fileFrom, "r+");
+    FILE* to = fopen(fileTo, "w+");
+    char* buff = (char*)malloc(sizeof(char)*rlen);
+    for(int i = 0; i<count; i++){
+        fread(buff,sizeof(char), rlen, from);
+        fwrite(buff, sizeof(char), rlen, to);
+    }
+    fclose(from);
+    fclose(to);
+}
