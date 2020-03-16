@@ -117,7 +117,7 @@ void find(char* currPath,char* fileName, int depth, int maxDepth, bool* found){
             break;
         }
         appendFileName(currPath, child->d_name);
-        findR(currPath, fileName, depth+1, maxDepth, found);
+        find(currPath, fileName, depth+1, maxDepth, found);
         cutFileName(currPath, child->d_name);
         child = readdir(dir);
     }
