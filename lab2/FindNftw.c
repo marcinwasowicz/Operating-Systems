@@ -139,7 +139,7 @@ int main(int argc, char* argv[]){
     maxDepth = atoi(argv[4]);
     if(strcmp(argv[1], "maxdepth") == 0){
         fileToSearch = argv[3];
-        nftw(root, &find, 20, FTW_ACTIONRETVAL);
+        nftw(root, &find, maxDepth, FTW_ACTIONRETVAL);
     }
     else{
         time(&date);
@@ -152,10 +152,10 @@ int main(int argc, char* argv[]){
         timeHandler->tm_mday -= num;
         date = mktime(timeHandler);
         if(strcmp(argv[1], "mtime") == 0){
-            nftw(root, &mtime, 20, FTW_ACTIONRETVAL);
+            nftw(root, &mtime, maxDepth, FTW_ACTIONRETVAL);
         }
         else if(strcmp(argv[1], "atime") == 0){
-            nftw(root, &atime, 20, FTW_ACTIONRETVAL);
+            nftw(root, &atime, maxDepth, FTW_ACTIONRETVAL);
         }
     }
 }
