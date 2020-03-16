@@ -96,7 +96,7 @@ bool checkAccessTime(struct stat* buff, char* type, int num, time_t date){
     return false;
 }
 
-void findR(char* currPath,char* fileName, int depth, int maxDepth, bool* found){
+void find(char* currPath,char* fileName, int depth, int maxDepth, bool* found){
     if(depth > maxDepth){
         return;
     }
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]){
     strcat(path, argv[2]);
     if(strcmp(argv[1], "maxdepth") == 0){
         bool found = false;
-        findR(path, argv[3],1, atoi(argv[4]), &found);
+        find(path, argv[3],1, atoi(argv[4]), &found);
     }
     else{
         time_t bareTime;
