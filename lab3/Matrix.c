@@ -2,6 +2,9 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<string.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<time.h>
 
 int min(int x, int y){
     if(x<y){
@@ -162,10 +165,10 @@ void multiplyFragmentToFile(char* matrixA, char* matrixB, char* out, int rowsA, 
     free(buffOut);
 }
 
-void multiplyFragmentsFromList(char* lista, int idx, int numOfPairs, int numOfProcesses){
+void multiplyFragmentsFromList(char* lista, int idx, int numOfPairs, int numOfProcesses, int* multiplications, int seconds){
     FILE* file = fopen(lista, "r");
-    int multiplications = 0;
-    for(; multiplications<numOfPairs; multiplications++){
+    int begin = time(NULL);
+    for(; (*multiplications)<numOfPairs; (*multiplications)++){
         char matrixA[256];
         char matrixB[256];
         char matrixC[256];
@@ -184,14 +187,17 @@ void multiplyFragmentsFromList(char* lista, int idx, int numOfPairs, int numOfPr
         strcat(matrixB, "bin");
         strcat(matrixC, "bin");
         multiplyFragment(matrixA, matrixB, matrixC, rowsA, columnsA, columnsB, idx, numOfProcesses);
+        if(time(NULL) - begin >=seconds){
+            break;
+        }
     }
     fclose(file);
 }
 
-void multiplyFragmentsFromListToFiles(char* lista, int idx, int numOfPairs, int numOfProcesses){
+void multiplyFragmentsFromListToFiles(char* lista, int idx, int numOfPairs, int numOfProcesses, int* multiplications, int seconds){
     FILE* file = fopen(lista, "r");
-    int multiplications = 0;
-    for(; multiplications<numOfPairs; multiplications++){
+    int begin = time(NULL);
+    for(; (*multiplications)<numOfPairs; (*multiplications)++){
         char matrixA[256];
         char matrixB[256];
         char matrixC[256];
@@ -212,6 +218,9 @@ void multiplyFragmentsFromListToFiles(char* lista, int idx, int numOfPairs, int 
         snprintf(buff, sizeof(buff), "%d", idx);
         strcat(matrixC, buff);
         multiplyFragmentToFile(matrixA, matrixB, matrixC, rowsA, columnsA, columnsB, idx, numOfProcesses);
+        if(time(NULL) - begin >= seconds){
+            break;
+        }
     }
     fclose(file);
 }
@@ -246,18 +255,25 @@ int main(int argc, char* argv[]){
     int numOfPairs = atoi(argv[2]);
     int numOfProcesses = atoi(argv[3]);
     int managerPID = getpid();
+    int seconds = atoi(argv[4]);
     //createBinariesSlicesVersion(argv[1], numOfPairs);
     createBinaries(argv[1], numOfPairs);
     for(int proces = 0; proces<=numOfProcesses; proces++){
         if(managerPID!=getpid()){
-            //multiplyFragmentsFromListToFiles(argv[1], proces, numOfPairs, numOfProcesses);
-            multiplyFragmentsFromList(argv[1], proces, numOfPairs, numOfProcesses);
-            break;
+            //multiplyFragmentsFromListToFiles(argv[1], proces, numOfPairs, numOfProcesses, &mult, seconds);
+            int mult = 0;
+            multiplyFragmentsFromList(argv[1], proces, numOfPairs, numOfProcesses, &mult, seconds);
+            exit(mult);
         }
-        fork();
+        if(proces<numOfProcesses){
+            fork();
+        }
+    }
+    int stat;
+    for(int i = 0; i<numOfProcesses; i++){
+        pid_t pid = wait(&stat);
+        printf("%s %d %s %d %s\n", "process of PID", pid, "completed", WEXITSTATUS(stat), "multiplications");
+
     }
     return 0;
 }
-
-
-
