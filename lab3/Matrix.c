@@ -5,6 +5,7 @@
 #include<sys/types.h>
 #include<sys/wait.h>
 #include<time.h>
+#include<sys/resource.h>
 
 int min(int x, int y){
     if(x<y){
@@ -251,15 +252,33 @@ void createBinariesSlicesVersion(char* list, int numOfPairs){
     fclose(file);
 }
 
+void setLimits(int seconds, int vmemory){
+    struct rlimit timeLimit;
+    struct rlimit memoryLimit;
+    timeLimit.rlim_cur = seconds;
+    timeLimit.rlim_max = seconds;
+    memoryLimit.rlim_cur = vmemory;
+    memoryLimit.rlim_max = vmemory;
+    setrlimit(RLIMIT_CPU, &timeLimit);
+    setrlimit(RLIMIT_AS, &memoryLimit);
+}
+
+void printUsage(struct rusage* usage){
+    printf("%s %ld %s\n","used", usage->ru_utime.tv_usec, "user time");
+    printf("%s %ld %s\n","used", usage->ru_stime.tv_sec, "system time");
+}
+
 int main(int argc, char* argv[]){
     int numOfPairs = atoi(argv[2]);
     int numOfProcesses = atoi(argv[3]);
     int managerPID = getpid();
     int seconds = atoi(argv[4]);
+    int vmemory = atoi(argv[5]);
     //createBinariesSlicesVersion(argv[1], numOfPairs);
     createBinaries(argv[1], numOfPairs);
     for(int proces = 0; proces<=numOfProcesses; proces++){
         if(managerPID!=getpid()){
+            setLimits(seconds, vmemory);
             //multiplyFragmentsFromListToFiles(argv[1], proces, numOfPairs, numOfProcesses, &mult, seconds);
             int mult = 0;
             multiplyFragmentsFromList(argv[1], proces, numOfPairs, numOfProcesses, &mult, seconds);
@@ -270,10 +289,11 @@ int main(int argc, char* argv[]){
         }
     }
     int stat;
+    struct rusage usage;
     for(int i = 0; i<numOfProcesses; i++){
-        pid_t pid = wait(&stat);
+        pid_t pid = wait3(&stat, 0,&usage);
         printf("%s %d %s %d %s\n", "process of PID", pid, "completed", WEXITSTATUS(stat), "multiplications");
-
+        printUsage(&usage);
     }
     return 0;
 }
