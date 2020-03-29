@@ -1,4 +1,3 @@
-#define _X_OPEN_SOURCE 700
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -23,10 +22,10 @@ void setUpSignalHandling(){
     struct sigaction action1;
     action.sa_flags = 0;
     action1.sa_flags = 0;
-    action.sa_handle = sigUsr1Handle;
-    action1.sa_handle = sigUsr2Handle;
-    sigemptyset(action.sa_mask);
-    sigemptyset(action1.sa_mask);
+    action.sa_handler = sigUsr1Handle;
+    action1.sa_handler = sigUsr2Handle;
+    sigemptyset(&action.sa_mask);
+    sigemptyset(&action1.sa_mask);
     sigaction(SIGUSR1, &action, NULL);
     sigaction(SIGUSR2, &action1, NULL);
 }
@@ -43,4 +42,3 @@ int main(int argc, char* argv[]){
     while(TRUE){}
     return 0;
 }
-
