@@ -2,11 +2,13 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<signal.h>
+#include<string.h>
 
 #define TRUE 1
 
 int toSend;
 int caught = 0;
+char mode[256];
 
 void sigUsr1Handle(int sig){
     caught++;
@@ -26,19 +28,44 @@ void setUpSignalHandling(){
     action1.sa_handler = sigUsr2Handle;
     sigemptyset(&action.sa_mask);
     sigemptyset(&action1.sa_mask);
-    sigaction(SIGUSR1, &action, NULL);
-    sigaction(SIGUSR2, &action1, NULL);
+    if(strcmp(mode, "SIGRT")!=0){
+        sigaction(SIGUSR1, &action, NULL);
+        sigaction(SIGUSR2, &action1, NULL);
+    }
+    else{
+        sigaction(SIGRTMIN+1, &action, NULL);
+        sigaction(SIGRTMIN+2, &action1, NULL);
+    }
 }
 
 
 int main(int argc, char* argv[]){
     int pid = atoi(argv[1]);
     toSend = atoi(argv[2]);
+    strcat(mode, argv[3]);
     setUpSignalHandling();
     for(int i = 0; i<toSend; i++){
-        kill(pid, SIGUSR1);
+        if(strcmp(mode, "kill") == 0){
+            kill(pid, SIGUSR1);
+        }
+        else if(strcmp(mode, "sigqueue") == 0){
+            union sigval val;
+            sigqueue(pid, SIGUSR1, val);
+        }
+        else{
+            kill(pid, SIGRTMIN+1);   
+        }
     }
-    kill(pid, SIGUSR2);
+    if(strcmp(mode, "kill") == 0){
+        kill(pid, SIGUSR2);
+    }
+    else if(strcmp(mode, "sigqueue") == 0){
+        union sigval val;
+        sigqueue(pid, SIGUSR2, val);
+    }
+    else{
+        kill(pid, SIGRTMIN+2);   
+    }
     while(TRUE){}
     return 0;
 }
