@@ -1,8 +1,17 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<signal.h>
-#include<string.h>
+#define _POSIX_C_SOURCE 200809L
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <sys/sysmacros.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include <sys/times.h>
+#include <time.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 #define TRUE 1
 
@@ -69,3 +78,4 @@ int main(int argc, char* argv[]){
     while(TRUE){}
     return 0;
 }
+

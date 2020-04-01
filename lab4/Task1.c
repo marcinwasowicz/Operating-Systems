@@ -21,10 +21,13 @@ void sigStpHandle(int sig){
 // perhaps i am wrong, but using system("ls") might fail, since once system() is executed the main process is stopped and Ctrl + Z signal
 // might be sent to the ls process, which is stopped, but has not a handler defined to come back.
 void printCurrentDirectory(){
+    if(stopped){
+        return;
+    }
     DIR* dir = opendir("./");
     for(struct dirent* file = readdir(dir); file!=NULL; file = readdir(dir)){
         if(stopped){
-            return;
+            break;
         }
         printf("%s ", file->d_name);
     }
