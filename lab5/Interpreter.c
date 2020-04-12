@@ -11,7 +11,7 @@
 
 typedef struct{
     char path[256];
-    char* args[256];
+    char* args[MAXARG];
 }execParams;
 
 void cleanExecParams(execParams* params){
