@@ -11,18 +11,11 @@
 #include<stdbool.h>
 
 bool loop = true;
-bool writing = false;
 
 char* buffer;
 
 void freeBuffer(int sig){
-    if(writing){
-        loop = false;
-    }
-    else{
-        free(buffer);
-        exit(0);
-    }
+    loop = false;
 }
 
 int main(int argc, char* argv[]){
@@ -33,16 +26,21 @@ int main(int argc, char* argv[]){
     int numChars = atoi(argv[3]);
 
     buffer = (char*)malloc(sizeof(char)*numChars);
+    int isWriter = 0;
 
     while(loop){
-        writing = false;
-        int isWriter = read(outPipe, buffer, numChars*sizeof(char));
-        writing = true;
+        isWriter = read(outPipe, buffer, numChars*sizeof(char));
         if(isWriter!=0){
             write(storage, buffer, sizeof(char)*isWriter);
         }
     }
 
+    while((isWriter = read(outPipe, buffer, numChars*sizeof(char)))!=0){
+        write(storage, buffer, sizeof(char)*isWriter);
+    }
+
+    close(outPipe);
+    close(storage);
     free(buffer);
     return 0;
 }
