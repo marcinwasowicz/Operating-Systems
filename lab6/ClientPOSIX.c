@@ -46,6 +46,16 @@ void handleDisconnectionSignal(int sig){
     signalFixing = true;
 }
 
+void handleConnectionSignal(int sig){
+    if(friendPid == -1 || friendQueue == -1){
+        mq_receive(myQueue, (char*) &messageBuffer, MESSAGE_SIZE, &priroty);
+        friendPid = messageBuffer.ID;
+        friendQueue = mq_open(messageBuffer.text, O_WRONLY);
+        printf("%s%d\n", "you are connected to a friend of ID: ", messageBuffer.queueInfo);
+    }
+    signalFixing = true;
+}
+
 void handleStop(int sig){
     setMessage(myID, myQueue, NULL);
     mq_send(serverQueue, (char*) &messageBuffer, MESSAGE_SIZE, STOP);
@@ -91,20 +101,8 @@ void handleReadingMailBox(){
 
     mq_setattr(myQueue, &oldAttr, NULL);
 
-    if(succes != -1){
-        if(priroty == CONNECT){
-            if(messageBuffer.queueInfo != -1){
-                friendPid = messageBuffer.ID;
-                friendQueue = mq_open(messageBuffer.text, O_WRONLY);
-                printf("%s%d\n", "you are connected to a friend of ID: ", messageBuffer.queueInfo);
-            }
-            else{
-                printf("%s", messageBuffer.text);
-            }
-        }
-        else if(priroty == TEXT_FRIEND){
-            printf("%s\n", messageBuffer.text);
-        }
+    if(succes != -1 ){
+        printf("%s\n", messageBuffer.text);
     }
     else{
         printf("%s\n", "no messages");
@@ -136,9 +134,13 @@ void initializeClient(){
 
     struct sigaction action;
     action.sa_flags = 0;
-    action.sa_handler = handleDisconnectionSignal;
     sigemptyset(&action.sa_mask);
+
+    action.sa_handler = handleDisconnectionSignal;
     sigaction(SIGTSTP, &action, NULL);
+
+    action.sa_handler = handleConnectionSignal;
+    sigaction(SIGUSR1, &action, NULL);
 
     struct mq_attr attr;
     attr.mq_curmsgs = 0;
@@ -208,6 +210,3 @@ int main(int argc, char* argv[]){
         handleRequest();
     }
 }
-
-
-

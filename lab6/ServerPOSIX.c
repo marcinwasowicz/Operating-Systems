@@ -79,6 +79,9 @@ void handleConnection(){
         mq_send(clients[clientID].cliendtQueueID, (char*) &messageBuffer, MESSAGE_SIZE, CONNECT);
         setMessage(clients[clientID].pid,clientID, clients[clientID].queuePath);
         mq_send(clients[wantedID].cliendtQueueID, (char*) &messageBuffer, MESSAGE_SIZE, CONNECT);
+
+        kill(clients[clientID].pid, SIGUSR1);
+        kill(clients[wantedID].pid, SIGUSR1);
     }
 }
 
