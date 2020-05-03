@@ -18,6 +18,7 @@ typedef struct{
     pthread_t tid;
     int idx;
     long int retval;
+    int myHistogram[256];
 }myThread;
 
 myThread** threads;
@@ -50,7 +51,7 @@ void* signMethod(void* args){
     for(int i = 0; i<height; i++){
         for(int j = 0; j<width; j++){
             if(image[i][j] >= from && image[i][j]<= to){
-                histogram[image[i][j]]++;
+                parameters->myHistogram[image[i][j]]++;
             }
         }
     }
@@ -76,7 +77,7 @@ void* blockMethod(void* args){
 
     for(int i = 0; i<height; i++){
         for(int j = from; j<= to; j++){
-            histogram[image[i][j]]++;
+            parameters->myHistogram[image[i][j]]++;
         }
     }
 
@@ -97,7 +98,7 @@ void* interleavedMethod(void* args){
 
     for(int i = 0; i<height; i++){
         for(int j = parameters->idx; j<width; j += numOfThreads){
-            histogram[image[i][j]]++;
+            parameters->myHistogram[image[i][j]]++;
         }
     }
 
@@ -137,6 +138,9 @@ void setUpGlobalVariables(char* argv[]){
     threads = (myThread**) malloc(numOfThreads*sizeof(myThread));
     for(int i = 0; i<numOfThreads; i++){
         threads[i] = (myThread*) malloc(sizeof(myThread));
+        for(int j = 0; j<256; j++){
+            threads[i]->myHistogram[j] = 0;
+        }
     }
     for(int i = 0; i<256; i++){
         histogram[i] = 0;
@@ -175,6 +179,11 @@ void clean(){
 }
 
 void printHistogram(char* outputFile){
+    for(int i = 0; i<numOfThreads; i++){
+        for(int j = 0; j<256; j++){
+            histogram[j]+=threads[i]->myHistogram[j];
+        }
+    }
     FILE* output = fopen(outputFile, "w+");
     for(int i = 0; i<256; i++){
         fprintf(output, "%d %d\n", i, histogram[i]);
@@ -192,7 +201,7 @@ int main(int argc, char* argv[]){
     clock_gettime(_POSIX_MONOTONIC_CLOCK, &end);
     raportThreads();
     printf("%s %ld\n", "whole operation took", (end.tv_nsec-start.tv_nsec)/1000);
-    clean();
     printHistogram(argv[4]);
+    clean();
     return 0;
 }
