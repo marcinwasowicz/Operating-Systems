@@ -124,8 +124,7 @@ void setUpGlobalVariables(char* argv[]){
     }
 
     FILE* input = fopen(argv[3], "r");
-    char c[2];
-    fscanf(input,"%c%c\n%d %d", &c[0], &c[1], &width, &height);
+    fscanf(input,"P2\n%d %d", &c[0], &c[1], &width, &height);
     image = (int**)malloc(sizeof(int*)*height);
     for(int i = 0; i<height; i++){
         image[i] = (int*)malloc(sizeof(int)*width);
