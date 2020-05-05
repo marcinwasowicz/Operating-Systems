@@ -12,6 +12,8 @@ file.write(str(width))
 file.write(" ")
 file.write(str(height))
 file.write("\n")
+file.write(str(255))
+file.write("\n")
 
 for i in range(height):
     for j in range(width):
